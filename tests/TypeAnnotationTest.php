@@ -653,6 +653,76 @@ class TypeAnnotationTest extends TestCase
                     '$output===' => 'list<1|2>',
                 ],
             ],
+            'selfReferencingTypeOnFunction' => [
+                'code' => '<?php
+                    /**
+                     * @psalm-type SomeType=array{
+                     *     parent?: SomeType,
+                     *     foo: int,
+                     * }
+                     * @psalm-param SomeType $input
+                     */
+                    function test(array $input):void {}',
+            ],
+            'selfReferencingTypeOnClass' => [
+                'code' => '<?php
+                    /**
+                     * @psalm-type Foo=array<Foo>
+                     */
+                    class A {
+                        /** @psalm-var Foo */
+                        public $value = [];
+                    }
+
+                    $instance = new A();
+                    $output = $instance->value;
+                    ',
+                'assertions' => [
+                    '$output' => 'array<array-key, array<array-key, type-alias(A::Foo)>>',
+                ],
+            ],
+            'recursivelyDefinedTypeOnClass' => [
+                'code' => '<?php
+                    /**
+                     * @psalm-type Foo=array<Bar>
+                     * @psalm-type Bar=array<Foo>
+                     */
+                    class A {
+                        /** @psalm-var Foo */
+                        public $value = [];
+                    }
+
+                    $instance = new A();
+                    $output = $instance->value;
+                    ',
+                'assertions' => [
+                    '$output' => 'array<array-key, array<array-key, array<array-key, type-alias(A::Bar)>>>',
+                ],
+            ],
+            'importedTypeIsRecursivelyDefined' => [
+                'code' => '<?php
+                    /**
+                     * @psalm-import-type Bar from B
+                     * @psalm-type Foo=array<Bar>
+                     */
+                    class A {
+                        /** @psalm-var Foo */
+                        public $value = [];
+                    }
+
+                    /**
+                     * @psalm-import-type Foo from A
+                     * @psalm-type Bar=array<Foo>
+                     */
+                    class B {}
+
+                    $instance = new A();
+                    $output = $instance->value;
+                    ',
+                'assertions' => [
+                    '$output' => 'array<array-key, array<array-key, array<array-key, type-alias(B::Bar)>>>',
+                ],
+            ],
         ];
     }
 
@@ -834,18 +904,6 @@ class TypeAnnotationTest extends TestCase
                         }
                     }',
                 'error_message' => 'PossiblyUndefinedArrayOffset',
-            ],
-            'noCrashWithSelfReferencingType' => [
-                'code' => '<?php
-                    /**
-                     * @psalm-type SomeType = array{
-                     *     parent?: SomeType,
-                     *     foo?: int,
-                     * }
-                     * @psalm-param SomeType $input
-                     */
-                    function test(array $input):void {}',
-                'error_message' => 'InvalidDocblock',
             ],
             'invalidTypeWhenNotImported' => [
                 'code' => '<?php

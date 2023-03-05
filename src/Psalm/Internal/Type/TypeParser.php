@@ -111,7 +111,8 @@ class TypeParser
         ?int $analysis_php_version_id = null,
         array $template_type_map = [],
         array $type_aliases = [],
-        bool $from_docblock = false
+        bool $from_docblock = false,
+        ?string $self_fqname = null
     ): Union {
         if (count($type_tokens) === 1) {
             $only_token = $type_tokens[0];
@@ -136,6 +137,7 @@ class TypeParser
                     strlen($only_token[0]),
                     isset($only_token[2]) && $only_token[2] !== $only_token[0] ? $only_token[2] : null,
                     $from_docblock,
+                    $self_fqname,
                 );
 
                 return new Union([$atomic], ['from_docblock' => $from_docblock]);
@@ -151,6 +153,7 @@ class TypeParser
             $template_type_map,
             $type_aliases,
             $from_docblock,
+            $self_fqname,
         );
 
         if (!($parsed_type instanceof Union)) {
@@ -171,7 +174,8 @@ class TypeParser
         ?int      $analysis_php_version_id = null,
         array     $template_type_map = [],
         array     $type_aliases = [],
-        bool      $from_docblock = false
+        bool      $from_docblock = false,
+        ?string   $self_fqname = null
     ): TypeNode {
         if ($parse_tree instanceof GenericTree) {
             return self::getTypeFromGenericTree(
@@ -180,6 +184,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
         }
 
@@ -190,6 +195,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
         }
 
@@ -200,6 +206,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
         }
 
@@ -210,6 +217,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
         }
 
@@ -221,6 +229,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             if (!$callable_type instanceof TCallable && !$callable_type instanceof TClosure) {
@@ -238,6 +247,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             $callable_type->return_type = $return_type instanceof Union
@@ -255,6 +265,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
         }
 
@@ -274,6 +285,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
         }
 
@@ -289,6 +301,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             if ($non_nullable_type instanceof Union) {
@@ -344,6 +357,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             $if_type = self::getTypeFromTree(
@@ -353,6 +367,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             $else_type = self::getTypeFromTree(
@@ -362,6 +377,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             if ($conditional_type instanceof Atomic) {
@@ -439,6 +455,7 @@ class TypeParser
             $parse_tree->offset_end,
             $parse_tree->text,
             $from_docblock,
+            $self_fqname,
         );
     }
 
@@ -574,7 +591,8 @@ class TypeParser
         Codebase $codebase,
         array $template_type_map,
         array $type_aliases,
-        bool $from_docblock = false
+        bool $from_docblock = false,
+        ?string $self_fqname = null
     ) {
         $generic_type = $parse_tree->value;
 
@@ -588,6 +606,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             if ($generic_type === 'class-string-map'
@@ -1004,7 +1023,8 @@ class TypeParser
         Codebase $codebase,
         array $template_type_map,
         array $type_aliases,
-        bool $from_docblock
+        bool $from_docblock,
+        ?string $self_fqname
     ): Union {
         $has_null = false;
 
@@ -1023,6 +1043,7 @@ class TypeParser
                     $template_type_map,
                     $type_aliases,
                     $from_docblock,
+                    $self_fqname,
                 );
                 $has_null = true;
             } else {
@@ -1033,6 +1054,7 @@ class TypeParser
                     $template_type_map,
                     $type_aliases,
                     $from_docblock,
+                    $self_fqname,
                 );
             }
 
@@ -1070,7 +1092,8 @@ class TypeParser
         Codebase $codebase,
         array $template_type_map,
         array $type_aliases,
-        bool $from_docblock
+        bool $from_docblock,
+        ?string $self_fqname
     ): Atomic {
         $intersection_types = [];
 
@@ -1082,6 +1105,7 @@ class TypeParser
                 $template_type_map,
                 $type_aliases,
                 $from_docblock,
+                $self_fqname,
             );
 
             if (!$atomic_type instanceof Atomic) {
@@ -1251,7 +1275,8 @@ class TypeParser
         Codebase $codebase,
         array $template_type_map,
         array $type_aliases,
-        bool $from_docblock
+        bool $from_docblock,
+        ?string $self_fqname
     ) {
         $params = [];
 
@@ -1268,6 +1293,7 @@ class TypeParser
                         $template_type_map,
                         $type_aliases,
                         $from_docblock,
+                        $self_fqname,
                     );
                 } else {
                     $tree_type = new TMixed(false, $from_docblock);
@@ -1287,6 +1313,7 @@ class TypeParser
                     $template_type_map,
                     $type_aliases,
                     $from_docblock,
+                    $self_fqname,
                 );
             }
 
@@ -1380,7 +1407,8 @@ class TypeParser
         Codebase $codebase,
         array $template_type_map,
         array $type_aliases,
-        bool $from_docblock
+        bool $from_docblock,
+        ?string $self_fqname
     ) {
         $properties = [];
         $class_strings = [];
@@ -1420,6 +1448,7 @@ class TypeParser
                     $template_type_map,
                     $type_aliases,
                     $from_docblock,
+                    $self_fqname,
                 );
                 $property_maybe_undefined = false;
                 $property_key = $i;
@@ -1432,6 +1461,7 @@ class TypeParser
                     $template_type_map,
                     $type_aliases,
                     $from_docblock,
+                    $self_fqname,
                 );
                 $property_maybe_undefined = $property_branch->possibly_undefined;
                 if (strpos($property_branch->value, '::')) {

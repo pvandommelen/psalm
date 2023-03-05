@@ -56,7 +56,8 @@ class CommentAnalyzer
         FileSource $source,
         Aliases $aliases,
         ?array $template_type_map = null,
-        ?array $type_aliases = null
+        ?array $type_aliases = null,
+        ?string $self_fqname = null
     ): array {
         $parsed_docblock = DocComment::parsePreservingLength($comment);
 
@@ -67,6 +68,7 @@ class CommentAnalyzer
             $aliases,
             $template_type_map,
             $type_aliases,
+            $self_fqname,
         );
     }
 
@@ -82,7 +84,8 @@ class CommentAnalyzer
         FileSource $source,
         Aliases $aliases,
         ?array $template_type_map = null,
-        ?array $type_aliases = null
+        ?array $type_aliases = null,
+        ?string $self_fqname = null
     ): array {
         $var_id = null;
 
@@ -166,6 +169,7 @@ class CommentAnalyzer
                         $template_type_map ?: [],
                         $type_aliases ?: [],
                         true,
+                        $self_fqname,
                     );
                 } catch (TypeParseTreeException $e) {
                     throw new DocblockParseException(

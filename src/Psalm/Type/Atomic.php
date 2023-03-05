@@ -160,7 +160,8 @@ abstract class Atomic implements TypeNode
         ?int   $offset_start = null,
         ?int   $offset_end = null,
         ?string $text = null,
-        bool    $from_docblock = false
+        bool    $from_docblock = false,
+        ?string $self_fqname = null
     ): Atomic {
         $result = self::createInner(
             $value,
@@ -168,6 +169,7 @@ abstract class Atomic implements TypeNode
             $template_type_map,
             $type_aliases,
             $from_docblock,
+            $self_fqname,
         );
         $result->offset_start = $offset_start;
         $result->offset_end = $offset_end;
@@ -186,7 +188,8 @@ abstract class Atomic implements TypeNode
         ?int   $analysis_php_version_id = null,
         array  $template_type_map = [],
         array  $type_aliases = [],
-        bool   $from_docblock = false
+        bool   $from_docblock = false,
+        ?string $self_fqname = null
     ): Atomic {
         switch ($value) {
             case 'int':
@@ -412,6 +415,9 @@ abstract class Atomic implements TypeNode
 
             if ($type_alias instanceof LinkableTypeAlias) {
                 return new TTypeAlias($type_alias->declaring_fq_classlike_name, $type_alias->alias_name);
+            }
+            if ($self_fqname !== null) {
+                return new TTypeAlias($self_fqname, $value);
             }
 
             throw new TypeParseTreeException('Invalid type alias ' . $value . ' provided');

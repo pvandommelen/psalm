@@ -450,6 +450,7 @@ class StatementsAnalyzer extends SourceAnalyzer
                             $statements_analyzer->getAliases(),
                             $template_type_map,
                             $file_storage->type_aliases,
+                            $context->self,
                         );
                 } catch (IncorrectDocblockException $e) {
                     IssueBuffer::maybeAdd(

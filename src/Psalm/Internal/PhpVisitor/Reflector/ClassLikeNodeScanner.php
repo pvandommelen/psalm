@@ -381,11 +381,6 @@ class ClassLikeNodeScanner
                     $fq_classlike_name,
                 );
 
-                foreach ($type_aliases as $type_alias) {
-                    // finds issues, if there are any
-                    TypeParser::parseTokens($type_alias->replacement_tokens);
-                }
-
                 $this->type_aliases += $type_aliases;
 
                 if ($type_aliases) {
@@ -826,6 +821,7 @@ class ClassLikeNodeScanner
                     [],
                     $this->type_aliases,
                     true,
+                    $fq_classlike_name
                 );
 
                 $converted_aliases[$key] = new ClassTypeAlias(array_values($union->getAtomicTypes()));
@@ -1530,6 +1526,7 @@ class ClassLikeNodeScanner
                     $this->aliases,
                     !$stmt->isStatic() ? $this->class_template_types : [],
                     $this->type_aliases,
+                    $fq_classlike_name,
                 );
 
                 $var_comment = array_pop($var_comments);
